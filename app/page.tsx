@@ -8,7 +8,7 @@ const config = {
   bio: "搞机圈的人｜Astro 爱好者｜分享 Android 改机、应用对比、技术教程",
   email: "shane@example.com",
   links: [
-    { label: "Blog", url: "https://shane-blog.pages.dev" },
+    { label: "Blog", url: "/blog" },
     { label: "Docs", url: "https://shane-docs.pages.dev" },
     { label: "GitHub", url: "https://github.com/shane0413" },
     { label: "Telegram", url: "https://t.me/Shane_0413" }
@@ -24,35 +24,28 @@ interface Repo {
   html_url: string;
 }
 
-interface User {
-  avatar_url: string;
-  name: string;
-}
-
 export default function Home() {
   const [tab, setTab] = useState('overview');
   const [projects, setProjects] = useState<Repo[]>([]);
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 获取用户信息
-    fetch('/api/user')
-      .then(res => res.json())
-      .then(data => setUser(data))
-      .catch(err => console.error(err));
+    const fetchData = async () => {
+      try {
+        // 获取项目
+        const reposRes = await fetch('/api/repos');
+        if (reposRes.ok) {
+          const reposData = await reposRes.json();
+          setProjects(Array.isArray(reposData) ? reposData : []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // 获取项目
-    fetch('/api/repos')
-      .then(res => res.json())
-      .then(data => {
-        setProjects(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+    fetchData();
   }, []);
 
   const totalStars = projects.reduce((sum, proj) => sum + proj.stargazers_count, 0);
@@ -66,7 +59,12 @@ export default function Home() {
           <ul className="flex gap-8">
             {config.links.map((link) => (
               <li key={link.label}>
-                <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-green-400 transition">
+                <a 
+                  href={link.url}
+                  target={link.url.startsWith('http') ? "_blank" : undefined}
+                  rel={link.url.startsWith('http') ? "noopener noreferrer" : undefined}
+                  className="text-gray-300 hover:text-green-400 transition"
+                >
                   {link.label}
                 </a>
               </li>
@@ -80,12 +78,8 @@ export default function Home() {
         <div className="mb-12">
           <div className="flex items-start gap-8 mb-8">
             {/* 头像区域 */}
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex-shrink-0 flex items-center justify-center overflow-hidden">
-              {user?.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-4xl text-white font-bold">S</span>
-              )}
+            <div className="w-32 h-32 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
+              <img src="/shane_avaver.png" alt="avatar" className="w-full h-full object-cover" />
             </div>
             
             {/* 个人信息 */}

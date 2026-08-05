@@ -1,5 +1,6 @@
 export async function GET() {
   const username = 'shane0413';
+  const token = process.env.GITHUB_TOKEN;
 
   try {
     const response = await fetch(
@@ -7,6 +8,7 @@ export async function GET() {
       {
         headers: {
           'Accept': 'application/vnd.github.v3+json',
+          'Authorization': `token ${token}`,
         },
       }
     );
