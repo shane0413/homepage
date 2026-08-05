@@ -4,13 +4,15 @@ import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
+
     const post = await db
       .select()
       .from(posts)
-      .where(eq(posts.slug, params.slug))
+      .where(eq(posts.slug, slug))
       .limit(1);
 
     if (post.length === 0) {
