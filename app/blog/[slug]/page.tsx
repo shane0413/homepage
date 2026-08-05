@@ -1,39 +1,44 @@
 import { MDXRemote } from 'next-mdx-remote/rsc';
-
-interface Post {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  content: string;
-  published: boolean;
-  createdAt: number;
-  views: number;
-}
+import { db } from '@/lib/db';
+import { posts } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 async function getPost(slug: string) {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/posts/${slug}`,
-      { next: { revalidate: 60 } }
-    );
-    if (!res.ok) return null;
-    return res.json();
+    const result = await db
+      .select()
+      .from(posts)
+      .where(eq(posts.slug, slug))
+      .limit(1);
+
+    return result[0] || null;
   } catch (err) {
+    console.error('GET POST (page) ERROR:', err);
     return null;
   }
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const post = await getPost(slug);
+
   return {
     title: post?.title || 'Post',
     description: post?.excerpt || '',
   };
 }
 
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post: Post | null = await getPost(params.slug);
+export default async function PostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const post = await getPost(slug);
 
   if (!post) {
     return (
@@ -49,11 +54,15 @@ export default async function PostPage({ params }: { params: { slug: string } })
         <a href="/blog" className="text-green-400 hover:underline mb-8 block">
           ← 返回博客
         </a>
-        
+
         <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
         <div className="flex gap-4 text-sm text-gray-400 mb-8">
           <span>{post.views} views</span>
-          <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+          <span>
+            {post.createdAt
+              ? new Date(post.createdAt).toLocaleDateString()
+              : ''}
+          </span>
         </div>
 
         <article className="prose prose-invert max-w-none">

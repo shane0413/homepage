@@ -23,6 +23,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const now = new Date();
+
     const newPost = await db
       .insert(posts)
       .values({
@@ -37,7 +39,9 @@ export async function POST(request: Request) {
         tags: data.tags || '',
         pubDatetime: data.pubDatetime
           ? new Date(data.pubDatetime)
-          : new Date(),
+          : now,
+        createdAt: now,
+        updatedAt: now,
       })
       .returning();
 
