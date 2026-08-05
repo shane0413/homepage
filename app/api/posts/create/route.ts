@@ -19,8 +19,16 @@ export async function POST(request: Request) {
     }).returning();
 
     return Response.json(newPost[0], { status: 201 });
-  } catch (error) {
-    console.error(error);
-    return Response.json({ error: 'Failed to create post' }, { status: 500 });
-  }
+  } catch (error: any) {
+  console.error('CREATE POST ERROR:', error);
+
+  return Response.json(
+    {
+      error: error.message,
+    },
+    {
+      status: 500,
+    }
+  );
+}
 }
