@@ -58,33 +58,19 @@ description:
 
             if (line.startsWith('title:')) {
                 data.title = line.replace('title:', '').trim();
-            }
-
-            else if (line.startsWith('author:')) {
+            } else if (line.startsWith('author:')) {
                 data.author = line.replace('author:', '').trim();
-            }
-
-            else if (line.startsWith('pubDatetime:')) {
+            } else if (line.startsWith('pubDatetime:')) {
                 data.pubDatetime = line.replace('pubDatetime:', '').trim();
-            }
-
-            else if (line.startsWith('featured:')) {
+            } else if (line.startsWith('featured:')) {
                 data.featured = line.includes('true');
-            }
-
-            else if (line.startsWith('draft:')) {
+            } else if (line.startsWith('draft:')) {
                 data.draft = line.includes('true');
-            }
-
-            else if (line.startsWith('category:')) {
+            } else if (line.startsWith('category:')) {
                 data.category = line.replace('category:', '').trim();
-            }
-
-            else if (line.startsWith('description:')) {
+            } else if (line.startsWith('description:')) {
                 data.description = line.replace('description:', '').trim();
-            }
-
-            else if (line.startsWith('tags:')) {
+            } else if (line.startsWith('tags:')) {
                 const tags: string[] = [];
 
                 let index = i + 1;
@@ -138,13 +124,11 @@ description:
                 .replace('.mdx', '')
                 .toLowerCase();
 
-
             const pubDatetime =
                 parsed.frontmatter.pubDatetime &&
                 !isNaN(Date.parse(parsed.frontmatter.pubDatetime))
                     ? new Date(parsed.frontmatter.pubDatetime)
                     : new Date();
-
 
             const res = await fetch('/api/posts/create', {
                 method: 'POST',
@@ -169,10 +153,10 @@ description:
                         parsed.frontmatter.category || '',
 
                     featured:
-                        parsed.frontmatter.featured || false,
+                        parsed.frontmatter.featured ?? false,
 
                     draft:
-                        parsed.frontmatter.draft !== false,
+                        parsed.frontmatter.draft ?? false,
 
                     tags:
                         parsed.frontmatter.tags || '',
@@ -184,6 +168,7 @@ description:
 
             if (res.ok) {
                 showToast('success', '文章发布成功');
+
                 setFileName('');
                 setContent(defaultContent);
 
@@ -196,15 +181,17 @@ description:
                 );
             }
 
-
         } catch (err) {
+
             showToast(
                 'error',
                 '错误：' + String(err)
             );
 
         } finally {
+
             setLoading(false);
+
         }
     };
 
@@ -241,7 +228,6 @@ description:
         );
     }
 
-
     return (
         <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
 
@@ -260,6 +246,7 @@ description:
             <div className="border-b border-gray-700 bg-gray-900 px-6 py-3 flex justify-between items-center">
 
                 <div className="flex items-center gap-3 flex-1">
+
                     <span className="text-gray-400 text-sm">
                         shane-blog / posts /
                     </span>
@@ -271,8 +258,8 @@ description:
                         className="bg-transparent text-white outline-none text-sm focus:bg-gray-800 focus:px-2 focus:py-1 focus:rounded border border-transparent focus:border-green-400 transition"
                         placeholder="filename.mdx"
                     />
-                </div>
 
+                </div>
 
                 <div className="flex gap-3 items-center">
 
@@ -284,7 +271,6 @@ description:
                         {loading ? '保存中...' : 'Commit'}
                     </button>
 
-
                     <button
                         onClick={() => setIsAuth(false)}
                         className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm"
@@ -295,7 +281,6 @@ description:
                 </div>
 
             </div>
-
 
             <div className="flex-1 overflow-hidden bg-gray-900">
 

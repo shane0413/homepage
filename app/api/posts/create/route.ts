@@ -6,7 +6,6 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
 
-    // 检查 slug 是否存在
     const oldPost = await db
       .select()
       .from(posts)
@@ -33,8 +32,8 @@ export async function POST(request: Request) {
         content: data.content || '',
         author: data.author || 'Shane',
         category: data.category || '',
-        featured: data.featured || false,
-        draft: data.draft !== false,
+        featured: data.featured ?? false,
+        draft: data.draft ?? false,
         tags: data.tags || '',
         pubDatetime: data.pubDatetime
           ? new Date(data.pubDatetime)
