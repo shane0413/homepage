@@ -20,8 +20,21 @@ export async function GET(
     }
 
     return Response.json(post[0]);
-  } catch (error) {
-    console.error(error);
-    return Response.json({ error: 'Failed to fetch post' }, { status: 500 });
+  } catch (error: any) {
+    console.error('GET POST ERROR:', error);
+    if (error?.cause) {
+      console.error('GET POST ERROR CAUSE:', error.cause);
+    }
+
+    return Response.json(
+      {
+        error:
+          error?.cause?.message ||
+          error?.message ||
+          'Failed to fetch post',
+        code: error?.code || error?.cause?.code || null,
+      },
+      { status: 500 }
+    );
   }
 }

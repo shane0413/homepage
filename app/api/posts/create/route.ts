@@ -47,10 +47,17 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error('CREATE POST ERROR:', error);
+    if (error?.cause) {
+      console.error('CREATE POST ERROR CAUSE:', error.cause);
+    }
 
     return Response.json(
       {
-        error: error.message || '创建文章失败',
+        error:
+          error?.cause?.message ||
+          error?.message ||
+          '创建文章失败',
+        code: error?.code || error?.cause?.code || null,
       },
       {
         status: 500,
