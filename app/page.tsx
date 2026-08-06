@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 const config = {
   name: "Shane",
   title: "Tech Blogger & Android Enthusiast",
-  bio: "谢恩的个人站点|基于 Next.js 和 React 构建，TypeScript加持",
+  bio: "谢恩的个人站点|基于Next.js和React构建 TypeScript加持",
   email: "shane@example.com",
   links: [
     { label: "Blog", url: "/blog" },
