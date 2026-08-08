@@ -1,10 +1,19 @@
 import { db } from '@/lib/db';
 import { posts } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { isAdminAuthorized, unauthorizedResponse } from '@/lib/admin-auth';
 
 export async function POST(request: Request) {
+  if (!isAdminAuthorized(request)) {
+    return unauthorizedResponse();
+  }
+
   try {
     const data = await request.json();
+
+    if (!data.slug) {
+      return Response.json({ error: '缺少 slug' }, { status: 400 });
+    }
 
     const oldPost = await db
       .select()
@@ -40,6 +49,10 @@ export async function POST(request: Request) {
         pubDatetime: data.pubDatetime
           ? new Date(data.pubDatetime)
           : now,
+        // 新建文章默认视为"未修改过"，除非调用方显式传入了 modifiedDatetime。
+        modifiedDatetime: data.modifiedDatetime
+          ? new Date(data.modifiedDatetime)
+          : null,
         createdAt: now,
         updatedAt: now,
       })

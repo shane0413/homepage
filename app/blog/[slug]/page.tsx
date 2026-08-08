@@ -3,8 +3,8 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import { db } from '@/lib/db';
 import { posts } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { LuCalendar, LuLayoutGrid, LuTag, LuArrowUp, LuEye } from 'react-icons/lu';
-import { formatDate } from '@/lib/format-date';
+import { LuCalendar, LuPencil, LuLayoutGrid, LuTag, LuArrowUp, LuEye } from 'react-icons/lu';
+import { formatDate, isModified } from '@/lib/format-date';
 import ShareButtons from '@/components/ShareButtons';
 
 async function getPost(slug: string) {
@@ -100,6 +100,12 @@ export default async function PostPage({
             <LuCalendar className="w-4 h-4" />
             {formatDate(post.pubDatetime)}
           </span>
+          {isModified(post.modifiedDatetime) && (
+            <span className="flex items-center gap-1" title="最后一次修改日期">
+              <LuPencil className="w-4 h-4 text-amber-400" />
+              {formatDate(post.modifiedDatetime)}
+            </span>
+          )}
           <span>{post.author}</span>
           <span className="flex items-center gap-1">
             <LuEye className="w-4 h-4" />
