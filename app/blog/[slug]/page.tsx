@@ -83,7 +83,7 @@ export default async function PostPage({
     : [];
 
   const pageUrl = `${
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://shanepage.netlify.app'
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://your-site.vercel.app'
   }/blog/${post.slug}`;
 
   return (

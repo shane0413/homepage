@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import type { JSX } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import {
@@ -9,7 +10,7 @@ import {
     LuPencil,
     LuEye,
     LuLogOut,
-    LuLoader2,
+    LuLoader,
     LuX,
     LuCheck,
     LuAlignLeft,
@@ -817,7 +818,7 @@ description:
                             >
                                 {loading ? (
                                     <>
-                                        <LuLoader2 className="w-4 h-4 animate-spin" />
+                                        <LuLoader className="w-4 h-4 animate-spin" />
                                         Committing...
                                     </>
                                 ) : (
