@@ -61,10 +61,12 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-(--color-canvas) text-(--color-fg)">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[280px_1fr]">
-          {/* 左侧个人信息栏，参照 GitHub 个人主页布局 */}
-          <aside className="flex flex-col items-start gap-4">
+          {/* 左侧个人信息栏，参照 GitHub 个人主页布局。
+              md:sticky + self-start：桌面横屏下右侧项目列表滚动时，
+              左侧信息栏固定在视口内，不会跟着一起往上滑走导致左边空白。 */}
+          <aside className="flex flex-col items-start gap-4 md:sticky md:top-20 md:self-start">
             <div className="h-52 w-52 overflow-hidden rounded-full border border-(--color-border)">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

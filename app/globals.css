@@ -72,8 +72,14 @@ body {
     "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
-* {
-  border-color: var(--color-border);
+/* 必须包在 @layer base 里：Tailwind v4 的工具类都在 cascade layer 里，
+   不在 layer 里的规则无论选择器优先级多低，都会覆盖 layer 里的规则。
+   之前这条裸规则写在 layer 外面，导致 border-transparent / border-(--color-accent)
+   这些工具类全部被它覆盖，表现为不管哪个 tab 被选中，下面都会显示一条 --color-border 的横线。 */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
 }
 
 ::selection {
