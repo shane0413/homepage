@@ -7,6 +7,7 @@ import { LuCalendar, LuPencil, LuFolder, LuTag, LuArrowUp, LuEye, LuArrowLeft } 
 import { formatDate, isModified } from '@/lib/format-date';
 import ShareButtons from '@/components/ShareButtons';
 import SiteHeader from '@/components/SiteHeader';
+import { ikUrl } from '@/lib/imagekit-url'; // 新增导入
 
 async function getPost(slug: string) {
   try {
@@ -83,9 +84,8 @@ export default async function PostPage({
     ? post.tags.split(',').map((t) => t.trim()).filter(Boolean)
     : [];
 
-  const pageUrl = `${
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://your-site.vercel.app'
-  }/blog/${post.slug}`;
+  const pageUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-site.vercel.app'
+    }/blog/${post.slug}`;
 
   return (
     <div id="top" className="flex min-h-screen flex-col bg-(--color-canvas) text-(--color-fg)">
@@ -103,7 +103,7 @@ export default async function PostPage({
         {post.coverImage && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={post.coverImage}
+            src={ikUrl(post.coverImage)} // 修改此处
             alt={post.title}
             className="mb-6 w-full rounded-lg border border-(--color-border) object-cover"
           />

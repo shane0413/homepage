@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { LuCalendar, LuPencil, LuFolder, LuEye } from 'react-icons/lu';
 import { formatDate, getEffectiveDate, isModified } from '@/lib/format-date';
 import { pickLayout, pickAspect } from '@/lib/post-layout';
+import { ikUrl } from '@/lib/imagekit-url';
 import type { Post } from '@/lib/types';
 
 function Meta({ post }: { post: Post }) {
@@ -44,7 +45,7 @@ export function PostListItem({ post }: { post: Post }) {
       {post.coverImage && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={post.coverImage}
+          src={ikUrl(post.coverImage, 'w-128,q-75,f-auto')}
           alt=""
           className="h-16 w-16 flex-shrink-0 rounded-md object-cover"
         />
@@ -85,7 +86,7 @@ export function PostGridCard({ post, totalCount }: { post: Post; totalCount: num
   const cover = hasCover ? (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={post.coverImage as string}
+      src={ikUrl(post.coverImage as string, 'w-800,q-80,f-auto')}
       alt=""
       className={
         isHorizontal

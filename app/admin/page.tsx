@@ -2,8 +2,9 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import CodeMirror from '@uiw/react-codemirror';
+import CodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
+import MediaUploader from '@/components/admin/MediaUploader';
 import {
     LuGitBranch,
     LuChevronDown,
@@ -74,6 +75,7 @@ export default function AdminPage() {
     const [showCreateMenu, setShowCreateMenu] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const editorRef = useRef<ReactCodeMirrorRef>(null);
 
     const buildDefaultContent = () => `---
 author: Shane
@@ -103,6 +105,32 @@ coverImage:
     const showToast = (type: 'success' | 'error', message: string) => {
         setToast({ type, message });
         setTimeout(() => setToast(null), 3000);
+    };
+
+    // 在 CodeMirror 光标处插入一段文本；拿不到 view 时退化为追加到末尾
+    const insertAtCursor = (snippet: string) => {
+        const view = editorRef.current?.view;
+
+        if (!view) {
+            setContent((prev) => prev + '\n' + snippet);
+            return;
+        }
+
+        const { from, to } = view.state.selection.main;
+
+        view.dispatch({
+            changes: { from, to, insert: snippet },
+            selection: { anchor: from + snippet.length },
+        });
+    };
+
+    // 把上传后的封面图 URL 写回 frontmatter 里的 coverImage: 行
+    const setCoverImage = (url: string) => {
+        setContent((prev) =>
+            /^coverImage:.*$/m.test(prev)
+                ? prev.replace(/^coverImage:.*$/m, `coverImage: ${url}`)
+                : prev
+        );
     };
 
     // 统一给管理类请求附带管理员密码请求头
@@ -1240,18 +1268,40 @@ ${full.content || ''}`;
                             </button>
                         </div>
 
-                        <button
-                            onClick={() => setSoftWrap((v) => !v)}
-                            className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border transition ${
-                                softWrap
-                                    ? 'bg-[#21262d] border-[#58a6ff] text-[#58a6ff]'
-                                    : 'bg-[#161b22] border-[#30363d] text-gray-400 hover:text-gray-200'
-                            }`}
-                        >
-                            <LuAlignLeft className="w-3.5 h-3.5" />
-                            Soft wrap
-                            <LuChevronDown className="w-3 h-3 opacity-60" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <MediaUploader
+                                authToken={authToken}
+                                label="插入图片/视频"
+                                onUploaded={(url) => {
+                                    const isVideo = /\.(mp4|mov|webm)$/i.test(url);
+                                    insertAtCursor(
+                                        isVideo
+                                            ? `<video src="${url}" controls></video>`
+                                            : `![](${url})`
+                                    );
+                                }}
+                            />
+
+                            <MediaUploader
+                                authToken={authToken}
+                                accept="image/*"
+                                label="设为封面"
+                                onUploaded={(url) => setCoverImage(url)}
+                            />
+
+                            <button
+                                onClick={() => setSoftWrap((v) => !v)}
+                                className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border transition ${
+                                    softWrap
+                                        ? 'bg-[#21262d] border-[#58a6ff] text-[#58a6ff]'
+                                        : 'bg-[#161b22] border-[#30363d] text-gray-400 hover:text-gray-200'
+                                }`}
+                            >
+                                <LuAlignLeft className="w-3.5 h-3.5" />
+                                Soft wrap
+                                <LuChevronDown className="w-3 h-3 opacity-60" />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Body */}
@@ -1259,6 +1309,7 @@ ${full.content || ''}`;
                         {activeTab === 'edit' ? (
                             <div className={`admin-editor h-full ${softWrap ? 'soft-wrap' : ''}`}>
                                 <CodeMirror
+                                    ref={editorRef}
                                     value={content}
                                     onChange={(val) => setContent(val)}
                                     extensions={[markdown()]}
