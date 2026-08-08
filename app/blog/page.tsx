@@ -97,9 +97,11 @@ export default function BlogPage() {
                 </h2>
 
                 {view === 'grid' ? (
-                  <div className="grid auto-rows-[minmax(0,auto)] grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
                     {group.items.map((post) => (
-                      <PostGridCard key={post.id} post={post} totalCount={posts.length} />
+                      <div key={post.id} className="mb-4 break-inside-avoid">
+                        <PostGridCard post={post} totalCount={posts.length} />
+                      </div>
                     ))}
                   </div>
                 ) : (
