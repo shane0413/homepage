@@ -1,26 +1,181 @@
 @import "tailwindcss";
 
+/* 用 [data-theme] 属性驱动 dark: 变体，而不是只依赖系统的 prefers-color-scheme，
+   这样才能实现手动的浅色/深色切换开关。 */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-canvas: #ffffff;
+  --color-canvas-subtle: #f6f8fa;
+  --color-canvas-inset: #f6f8fa;
+  --color-border: #d1d9e0;
+  --color-border-muted: #d1d9e0b3;
+  --color-fg: #1f2328;
+  --color-fg-muted: #59636e;
+  --color-fg-subtle: #818b98;
+  --color-accent: #0969da;
+  --color-accent-emphasis: #0550ae;
+  --color-accent-subtle: #ddf4ff;
+  --color-success: #1a7f37;
+  --color-attention: #9a6700;
+  --color-danger: #d1242f;
+}
+
+[data-theme="dark"] {
+  --color-canvas: #0d1117;
+  --color-canvas-subtle: #161b22;
+  --color-canvas-inset: #010409;
+  --color-border: #30363d;
+  --color-border-muted: #30363db3;
+  --color-fg: #e6edf3;
+  --color-fg-muted: #8d96a0;
+  --color-fg-subtle: #6e7681;
+  --color-accent: #4493f8;
+  --color-accent-emphasis: #58a6ff;
+  --color-accent-subtle: #0c2d6b;
+  --color-success: #3fb950;
+  --color-attention: #d29922;
+  --color-danger: #f85149;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-canvas: var(--color-canvas);
+  --color-canvas-subtle: var(--color-canvas-subtle);
+  --color-canvas-inset: var(--color-canvas-inset);
+  --color-border: var(--color-border);
+  --color-border-muted: var(--color-border-muted);
+  --color-fg: var(--color-fg);
+  --color-fg-muted: var(--color-fg-muted);
+  --color-fg-subtle: var(--color-fg-subtle);
+  --color-accent: var(--color-accent);
+  --color-accent-emphasis: var(--color-accent-emphasis);
+  --color-accent-subtle: var(--color-accent-subtle);
+  --color-success: var(--color-success);
+  --color-attention: var(--color-attention);
+  --color-danger: var(--color-danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+::selection {
+  background: var(--color-accent-subtle);
+}
+
+/* 简洁的滚动条，避免默认样式在深色模式下显得突兀 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 999px;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 文章正文排版：走简约风格，跟随主题色，不使用花哨效果 */
+.prose-site {
+  color: var(--color-fg);
+  line-height: 1.75;
+}
+.prose-site h1,
+.prose-site h2,
+.prose-site h3,
+.prose-site h4 {
+  color: var(--color-fg);
+  font-weight: 600;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+}
+.prose-site h1 { font-size: 1.6em; }
+.prose-site h2 { font-size: 1.4em; border-bottom: 1px solid var(--color-border); padding-bottom: 0.3em; }
+.prose-site h3 { font-size: 1.15em; }
+.prose-site p { margin: 1em 0; color: var(--color-fg); }
+.prose-site a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; }
+.prose-site a:hover { color: var(--color-accent-emphasis); }
+.prose-site strong { color: var(--color-fg); font-weight: 600; }
+.prose-site ul, .prose-site ol { margin: 1em 0; padding-left: 1.5em; color: var(--color-fg); }
+.prose-site li { margin: 0.35em 0; }
+.prose-site blockquote {
+  border-left: 3px solid var(--color-border);
+  margin: 1.2em 0;
+  padding: 0.2em 1em;
+  color: var(--color-fg-muted);
+}
+.prose-site code {
+  background: var(--color-canvas-subtle);
+  border: 1px solid var(--color-border-muted);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-size: 0.9em;
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.prose-site pre {
+  background: var(--color-canvas-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1em;
+  overflow-x: auto;
+  margin: 1.2em 0;
+}
+.prose-site pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.prose-site img {
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  max-width: 100%;
+}
+.prose-site hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 2em 0;
+}
+.prose-site table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.2em 0;
+}
+.prose-site th, .prose-site td {
+  border: 1px solid var(--color-border);
+  padding: 0.5em 0.8em;
+  text-align: left;
+}
+.prose-site th {
+  background: var(--color-canvas-subtle);
 }

@@ -39,6 +39,7 @@ interface AdminPost {
     title: string;
     slug: string;
     excerpt?: string | null;
+    coverImage?: string | null;
     category?: string | null;
     author?: string | null;
     tags?: string | null;
@@ -85,6 +86,7 @@ tags:
 - 
 category: 
 description: 
+coverImage: 
 ---
 # 开始写文章`;
 
@@ -220,6 +222,8 @@ description:
                 data.category = line.replace('category:', '').trim();
             } else if (line.startsWith('description:')) {
                 data.description = line.replace('description:', '').trim();
+            } else if (line.startsWith('coverImage:')) {
+                data.coverImage = line.replace('coverImage:', '').trim();
             } else if (line.startsWith('tags:')) {
                 const tags: string[] = [];
 
@@ -305,7 +309,7 @@ description:
 
     const openEditPost = async (post: AdminPost) => {
         try {
-            const res = await fetch(`/api/posts/${post.slug}`);
+            const res = await adminFetch(`/api/admin/posts/${post.slug}`);
 
             if (!res.ok) {
                 showToast('error', '加载文章失败');
@@ -342,6 +346,7 @@ tags:
 ${tagsBlock}
 category: ${full.category || ''}
 description: ${full.excerpt || ''}
+coverImage: ${full.coverImage || ''}
 ---
 ${full.content || ''}`;
 
@@ -366,7 +371,7 @@ ${full.content || ''}`;
         setDeletingSlug(post.slug);
 
         try {
-            const res = await adminFetch(`/api/posts/${post.slug}`, {
+            const res = await adminFetch(`/api/admin/posts/${post.slug}`, {
                 method: 'DELETE',
             });
 
@@ -432,7 +437,7 @@ ${full.content || ''}`;
             const isEditing = !!editingSlug;
 
             const res = await adminFetch(
-                isEditing ? `/api/posts/${editingSlug}` : '/api/posts/create',
+                isEditing ? `/api/admin/posts/${editingSlug}` : '/api/admin/posts',
                 {
                     method: isEditing ? 'PUT' : 'POST',
                     body: JSON.stringify({
@@ -441,6 +446,9 @@ ${full.content || ''}`;
 
                         excerpt:
                             parsed.frontmatter.description || '',
+
+                        coverImage:
+                            parsed.frontmatter.coverImage || '',
 
                         content: parsed.body,
 

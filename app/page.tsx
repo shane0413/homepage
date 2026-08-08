@@ -1,17 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import {
+  LuStar,
+  LuGitFork,
+  LuExternalLink,
+  LuGithub,
+  LuUserPlus,
+} from 'react-icons/lu';
+import SiteHeader from '@/components/SiteHeader';
 
 const config = {
-  name: "Shane",
-  title: "Tech Blogger & Android Enthusiast",
-  bio: "谢恩的个人站点|基于Next.js和React构建 TypeScript加持",
-  email: "shane@example.com",
+  name: 'Shane',
+  title: 'Tech Blogger & Android Enthusiast',
+  bio: '谢恩的个人站点 · 基于 Next.js 和 React 构建，TypeScript 加持',
   links: [
-    { label: "Blog", url: "/blog" },
-    { label: "Docs", url: "https://shane-docs.pages.dev" },
-    { label: "GitHub", url: "https://github.com/shane0413" },
-    { label: "Telegram", url: "https://t.me/Shane_0413" }
+    { label: 'Blog', url: '/blog' },
+    { label: 'Docs', url: 'https://shane-docs.pages.dev' },
+    { label: 'Telegram', url: 'https://t.me/Shane_0413' },
   ],
 };
 
@@ -21,18 +27,18 @@ interface Repo {
   description: string;
   language: string;
   stargazers_count: number;
+  forks_count: number;
   html_url: string;
 }
 
 export default function Home() {
-  const [tab, setTab] = useState('overview');
+  const [tab, setTab] = useState<'overview' | 'projects'>('overview');
   const [projects, setProjects] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 获取项目
         const reposRes = await fetch('/api/repos');
         if (reposRes.ok) {
           const reposData = await reposRes.json();
@@ -48,126 +54,144 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const totalStars = projects.reduce((sum, proj) => sum + proj.stargazers_count, 0);
+  const totalStars = projects.reduce((sum, p) => sum + (p.stargazers_count || 0), 0);
+  const visibleProjects = tab === 'projects' ? projects : projects.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      {/* 导航栏 */}
-      <nav className="border-b border-gray-700 sticky top-0 bg-gray-950 bg-opacity-95 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-xl font-bold text-white">@{config.name.toLowerCase()}</div>
-          <ul className="flex gap-8">
-            {config.links.map((link) => (
-              <li key={link.label}>
-                <a 
-                  href={link.url}
-                  target={link.url.startsWith('http') ? "_blank" : undefined}
-                  rel={link.url.startsWith('http') ? "noopener noreferrer" : undefined}
-                  className="text-gray-300 hover:text-green-400 transition"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
+    <div className="flex min-h-screen flex-col bg-(--color-canvas) text-(--color-fg)">
+      <SiteHeader />
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        {/* 头部信息 */}
-        <div className="mb-12">
-          <div className="flex items-start gap-8 mb-8">
-            {/* 头像区域 */}
-            <div className="w-32 h-32 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
-              <img src="/shane_avaver.png" alt="avatar" className="w-full h-full object-cover" />
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[280px_1fr]">
+          {/* 左侧个人信息栏，参照 GitHub 个人主页布局 */}
+          <aside className="flex flex-col items-start gap-4">
+            <div className="h-52 w-52 overflow-hidden rounded-full border border-(--color-border)">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/shane_avaver.png"
+                alt={config.name}
+                className="h-full w-full object-cover"
+              />
             </div>
-            
-            {/* 个人信息 */}
-            <div className="flex-1 pt-2">
-              <h1 className="text-3xl font-bold text-white mb-2">{config.name}</h1>
-              <p className="text-lg text-gray-300 mb-3">{config.title}</p>
-              <p className="text-gray-400 mb-4 leading-relaxed">{config.bio}</p>
-              <a 
-                href="https://shane-blog.pages.dev/about"
+
+            <div>
+              <h1 className="text-2xl font-bold text-(--color-fg)">{config.name}</h1>
+              <p className="text-lg text-(--color-fg-muted)">{config.title}</p>
+            </div>
+
+            <p className="leading-relaxed text-(--color-fg)">{config.bio}</p>
+
+            <a
+              href="https://github.com/shane0413"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-(--color-border) bg-(--color-canvas-subtle) px-4 py-1.5 text-sm font-medium text-(--color-fg) transition hover:border-(--color-accent) hover:text-(--color-accent)"
+            >
+              <LuUserPlus className="h-4 w-4" />
+              Follow me
+            </a>
+
+            <div className="flex items-center gap-2 text-sm text-(--color-fg-muted)">
+              <LuGithub className="h-4 w-4" />
+              <a
+                href="https://github.com/shane0413"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium transition inline-block"
+                className="hover:text-(--color-accent) hover:underline"
               >
-                About
+                shane0413
               </a>
             </div>
-          </div>
 
-          {/* 统计信息 */}
-          <div className="flex gap-8 text-sm">
-            <div>
-              <span className="text-white font-bold">{projects.length}</span>
-              <span className="text-gray-400"> projects</span>
-            </div>
-            <div>
-              <span className="text-white font-bold">{totalStars}</span>
-              <span className="text-gray-400"> stars</span>
-            </div>
-            <div>
-              <span className="text-white font-bold">搞机圈</span>
-              <span className="text-gray-400"> member</span>
-            </div>
-          </div>
-        </div>
+            <ul className="flex flex-col gap-2 pt-2 text-sm">
+              {config.links.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.url}
+                    target={link.url.startsWith('http') ? '_blank' : undefined}
+                    rel={link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    className="flex items-center gap-1.5 text-(--color-fg-muted) transition hover:text-(--color-accent)"
+                  >
+                    {link.label}
+                    {link.url.startsWith('http') && <LuExternalLink className="h-3 w-3" />}
+                  </a>
+                </li>
+              ))}
+            </ul>
 
-        {/* Tab 导航 */}
-        <div className="border-b border-gray-700 mb-8 flex gap-6">
-          {['overview', 'projects', 'contributions'].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`pb-3 px-1 border-b-2 transition capitalize ${
-                tab === t
-                  ? 'border-green-400 text-white'
-                  : 'border-transparent text-gray-400 hover:text-gray-300'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+            <div className="flex gap-6 border-t border-(--color-border) pt-4 text-sm">
+              <div>
+                <span className="font-semibold text-(--color-fg)">{projects.length}</span>
+                <span className="text-(--color-fg-muted)"> projects</span>
+              </div>
+              <div>
+                <span className="font-semibold text-(--color-fg)">{totalStars}</span>
+                <span className="text-(--color-fg-muted)"> stars</span>
+              </div>
+            </div>
+          </aside>
 
-        {/* 项目卡片 */}
-        {tab === 'overview' || tab === 'projects' ? (
-          <div className="grid gap-4">
-            {loading ? (
-              <div className="text-gray-400 text-center py-8">加载中...</div>
-            ) : projects.length === 0 ? (
-              <div className="text-gray-400 text-center py-8">暂无项目</div>
-            ) : (
-              projects.map((project) => (
-                <div key={project.id} className="border border-gray-700 rounded-lg p-4 hover:border-gray-600 hover:bg-gray-900 transition">
-                  <div className="flex items-start justify-between mb-2">
-                    <a 
-                      href={project.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-green-400 hover:underline font-semibold text-lg"
-                    >
-                      {project.name}
-                    </a>
-                    <span className="text-gray-400 text-sm flex items-center gap-1">
-                      ⭐ {project.stargazers_count}
-                    </span>
+          {/* 右侧内容区 */}
+          <section>
+            <div className="mb-6 flex gap-6 border-b border-(--color-border)">
+              {(['overview', 'projects'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`border-b-2 px-1 pb-3 text-sm capitalize transition ${
+                    tab === t
+                      ? 'border-(--color-accent) font-medium text-(--color-fg)'
+                      : 'border-transparent text-(--color-fg-muted) hover:text-(--color-fg)'
+                  }`}
+                >
+                  {t === 'overview' ? 'Overview' : 'Projects'}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid gap-4">
+              {loading ? (
+                <div className="py-8 text-center text-(--color-fg-muted)">加载中...</div>
+              ) : visibleProjects.length === 0 ? (
+                <div className="py-8 text-center text-(--color-fg-muted)">暂无项目</div>
+              ) : (
+                visibleProjects.map((project) => (
+                  <div
+                    key={project.id}
+                    className="rounded-lg border border-(--color-border) p-4 transition hover:border-(--color-accent)"
+                  >
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <a
+                        href={project.html_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-lg font-semibold text-(--color-accent) hover:underline"
+                      >
+                        {project.name}
+                      </a>
+                      <div className="flex flex-shrink-0 items-center gap-3 text-sm text-(--color-fg-muted)">
+                        <span className="flex items-center gap-1">
+                          <LuStar className="h-4 w-4" />
+                          {project.stargazers_count}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <LuGitFork className="h-4 w-4" />
+                          {project.forks_count}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mb-3 text-(--color-fg-muted)">
+                      {project.description || 'No description'}
+                    </p>
+                    {project.language && (
+                      <span className="text-xs text-(--color-fg-subtle)">{project.language}</span>
+                    )}
                   </div>
-                  <p className="text-gray-300 mb-3">{project.description || "No description"}</p>
-                  <div className="flex gap-4 text-xs text-gray-400">
-                    <span>{project.language || "Unknown"}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-12 text-gray-400">
-            contributions chart coming soon...
-          </div>
-        )}
+                ))
+              )}
+            </div>
+          </section>
+        </div>
       </main>
     </div>
   );

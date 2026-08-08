@@ -7,6 +7,8 @@ export const posts = sqliteTable('posts', {
   slug: text('slug').notNull().unique(),
   excerpt: text('excerpt'),
   content: text('content').notNull(),
+  // 封面图片 URL，可为空。为空时列表/卡片不展示封面区域。
+  coverImage: text('coverImage'),
   author: text('author').default('Shane'),
   category: text('category'),
   featured: integer('featured', { mode: 'boolean' }).default(false),

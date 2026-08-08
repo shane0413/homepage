@@ -1,26 +1,25 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { LuCalendar, LuPencil, LuLayoutGrid, LuEye } from 'react-icons/lu';
-import { formatDate, getEffectiveDate, isModified, groupPostsByMonth } from '@/lib/format-date';
+import { LuLayoutGrid, LuList } from 'react-icons/lu';
+import SiteHeader from '@/components/SiteHeader';
+import { PostGridCard, PostListItem } from '@/components/PostCard';
+import { groupPostsByMonth, getEffectiveDate } from '@/lib/format-date';
+import type { Post } from '@/lib/types';
 
-interface Post {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  category?: string;
-  pubDatetime: string;
-  modifiedDatetime?: string | null;
-  views: number;
-}
+type ViewMode = 'grid' | 'list';
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<ViewMode>('grid');
 
   useEffect(() => {
+    const stored = localStorage.getItem('blog-view');
+    if (stored === 'grid' || stored === 'list') {
+      setView(stored);
+    }
+
     const fetchPosts = async () => {
       try {
         const res = await fetch('/api/posts');
@@ -38,81 +37,83 @@ export default function BlogPage() {
     fetchPosts();
   }, []);
 
+  const setViewMode = (mode: ViewMode) => {
+    setView(mode);
+    localStorage.setItem('blog-view', mode);
+  };
+
   // 按"有效日期"（有修改日期用修改日期，否则用发布日期）分月分栏。
-  // 例如 3 月发布、7 月修改的文章，会出现在 7 月这一栏。
   const monthGroups = useMemo(
-    () =>
-      groupPostsByMonth(posts, (p) =>
-        getEffectiveDate(p.pubDatetime, p.modifiedDatetime)
-      ),
+    () => groupPostsByMonth(posts, (p) => getEffectiveDate(p.pubDatetime, p.modifiedDatetime)),
     [posts]
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold mb-8">Blog</h1>
+    <div className="flex min-h-screen flex-col bg-(--color-canvas) text-(--color-fg)">
+      <SiteHeader />
+
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Blog</h1>
+
+          <div className="flex items-center rounded-md border border-(--color-border) p-0.5">
+            <button
+              onClick={() => setViewMode('grid')}
+              aria-label="网格模式"
+              title="网格模式"
+              className={`flex h-7 w-7 items-center justify-center rounded ${
+                view === 'grid'
+                  ? 'bg-(--color-canvas-subtle) text-(--color-fg)'
+                  : 'text-(--color-fg-muted)'
+              }`}
+            >
+              <LuLayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              aria-label="列表模式"
+              title="列表模式"
+              className={`flex h-7 w-7 items-center justify-center rounded ${
+                view === 'list'
+                  ? 'bg-(--color-canvas-subtle) text-(--color-fg)'
+                  : 'text-(--color-fg-muted)'
+              }`}
+            >
+              <LuList className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
 
         {loading ? (
-          <div className="text-gray-400">加载中...</div>
+          <div className="text-(--color-fg-muted)">加载中...</div>
         ) : posts.length === 0 ? (
-          <div className="text-gray-400">暂无文章</div>
+          <div className="text-(--color-fg-muted)">暂无文章</div>
         ) : (
           <div className="space-y-10">
             {monthGroups.map((group) => (
               <section key={group.key}>
-                <h2 className="text-sm font-semibold tracking-wide text-gray-500 uppercase mb-4 pb-2 border-b border-gray-800">
+                <h2 className="mb-4 border-b border-(--color-border) pb-2 text-sm font-semibold uppercase tracking-wide text-(--color-fg-subtle)">
                   {group.label}
                 </h2>
 
-                <div className="grid gap-6">
-                  {group.items.map((post) => {
-                    const modified = isModified(post.modifiedDatetime);
-                    const effective = getEffectiveDate(
-                      post.pubDatetime,
-                      post.modifiedDatetime
-                    );
-
-                    return (
-                      <Link key={post.id} href={`/blog/${post.slug}`}>
-                        <div className="border border-gray-700 rounded-lg p-6 hover:border-gray-600 hover:bg-gray-900 transition cursor-pointer">
-                          <h3 className="text-2xl font-bold text-green-400 mb-2 hover:underline">
-                            {post.title}
-                          </h3>
-                          <p className="text-gray-300 mb-3">{post.excerpt}</p>
-                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
-                            <span
-                              className="flex items-center gap-1"
-                              title={modified ? '最后修改日期' : '发布日期'}
-                            >
-                              {modified ? (
-                                <LuPencil className="w-4 h-4 text-amber-400" />
-                              ) : (
-                                <LuCalendar className="w-4 h-4" />
-                              )}
-                              {formatDate(effective)}
-                            </span>
-                            {post.category && (
-                              <span className="flex items-center gap-1">
-                                <LuLayoutGrid className="w-4 h-4" />
-                                {post.category}
-                              </span>
-                            )}
-                            <span className="flex items-center gap-1">
-                              <LuEye className="w-4 h-4" />
-                              {post.views} views
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
+                {view === 'grid' ? (
+                  <div className="grid auto-rows-[minmax(0,auto)] grid-cols-1 gap-4 sm:grid-cols-2">
+                    {group.items.map((post) => (
+                      <PostGridCard key={post.id} post={post} totalCount={posts.length} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {group.items.map((post) => (
+                      <PostListItem key={post.id} post={post} />
+                    ))}
+                  </div>
+                )}
               </section>
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

@@ -2,17 +2,18 @@ import Link from 'next/link';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { db } from '@/lib/db';
 import { posts } from '@/lib/db/schema';
-import { eq, desc } from 'drizzle-orm';
-import { LuCalendar, LuPencil, LuLayoutGrid, LuTag, LuArrowUp, LuEye } from 'react-icons/lu';
+import { eq, desc, and } from 'drizzle-orm';
+import { LuCalendar, LuPencil, LuFolder, LuTag, LuArrowUp, LuEye, LuArrowLeft } from 'react-icons/lu';
 import { formatDate, isModified } from '@/lib/format-date';
 import ShareButtons from '@/components/ShareButtons';
+import SiteHeader from '@/components/SiteHeader';
 
 async function getPost(slug: string) {
   try {
     const result = await db
       .select()
       .from(posts)
-      .where(eq(posts.slug, slug))
+      .where(and(eq(posts.slug, slug), eq(posts.draft, false)))
       .limit(1);
 
     return result[0] || null;
@@ -25,10 +26,7 @@ async function getPost(slug: string) {
 async function getNextPost(slug: string) {
   try {
     const list = await db
-      .select({
-        slug: posts.slug,
-        title: posts.title,
-      })
+      .select({ slug: posts.slug, title: posts.title })
       .from(posts)
       .where(eq(posts.draft, false))
       .orderBy(desc(posts.pubDatetime));
@@ -70,8 +68,11 @@ export default async function PostPage({
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center">
-        <div className="text-gray-400">文章未找到</div>
+      <div className="flex min-h-screen flex-col bg-(--color-canvas) text-(--color-fg)">
+        <SiteHeader />
+        <div className="flex flex-1 items-center justify-center text-(--color-fg-muted)">
+          文章未找到
+        </div>
       </div>
     );
   }
@@ -87,83 +88,105 @@ export default async function PostPage({
   }/blog/${post.slug}`;
 
   return (
-    <div id="top" className="min-h-screen bg-gray-950 text-gray-100">
-      <div className="max-w-2xl mx-auto px-6 py-12">
-        <a href="/blog" className="text-green-400 hover:underline mb-8 block">
-          ← 返回博客
-        </a>
+    <div id="top" className="flex min-h-screen flex-col bg-(--color-canvas) text-(--color-fg)">
+      <SiteHeader />
 
-        <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+      <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-12 sm:px-6">
+        <Link
+          href="/blog"
+          className="mb-8 flex items-center gap-1.5 text-sm text-(--color-accent) hover:underline"
+        >
+          <LuArrowLeft className="h-4 w-4" />
+          返回博客
+        </Link>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400 mb-8">
+        {post.coverImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={post.coverImage}
+            alt={post.title}
+            className="mb-6 w-full rounded-lg border border-(--color-border) object-cover"
+          />
+        )}
+
+        <h1 className="mb-4 text-3xl font-bold sm:text-4xl">{post.title}</h1>
+
+        <div className="mb-8 flex flex-wrap items-center gap-4 text-sm text-(--color-fg-muted)">
           <span className="flex items-center gap-1">
-            <LuCalendar className="w-4 h-4" />
+            <LuCalendar className="h-4 w-4" />
             {formatDate(post.pubDatetime)}
           </span>
           {isModified(post.modifiedDatetime) && (
             <span className="flex items-center gap-1" title="最后一次修改日期">
-              <LuPencil className="w-4 h-4 text-amber-400" />
+              <LuPencil className="h-4 w-4 text-(--color-attention)" />
               {formatDate(post.modifiedDatetime)}
             </span>
           )}
           <span>{post.author}</span>
           <span className="flex items-center gap-1">
-            <LuEye className="w-4 h-4" />
+            <LuEye className="h-4 w-4" />
             {post.views} views
           </span>
         </div>
 
-        <article className="prose prose-invert max-w-none">
+        <article className="prose-site">
           <MDXRemote source={post.content} />
         </article>
 
-        <div className="mt-12 space-y-4 border-t border-gray-700 pt-6">
+        <div className="mt-12 space-y-4 border-t border-(--color-border) pt-6">
           {post.category && (
-            <div className="flex items-center gap-2 text-sm text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-(--color-fg-muted)">
               <span>分类：</span>
-              <span className="flex items-center gap-1 text-gray-200">
-                <LuLayoutGrid className="w-4 h-4" />
+              <Link
+                href={`/blog/categories/${encodeURIComponent(post.category)}`}
+                className="flex items-center gap-1 text-(--color-fg) transition hover:text-(--color-accent)"
+              >
+                <LuFolder className="h-4 w-4" />
                 {post.category}
-              </span>
+              </Link>
             </div>
           )}
 
           {tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-(--color-fg-muted)">
               <span className="flex items-center gap-1">
-                <LuTag className="w-4 h-4" />
+                <LuTag className="h-4 w-4" />
                 标签：
               </span>
               {tags.map((tag) => (
-                <span key={tag} className="text-gray-200">
+                <Link
+                  key={tag}
+                  href={`/blog/tags/${encodeURIComponent(tag)}`}
+                  className="text-(--color-fg) transition hover:text-(--color-accent)"
+                >
                   #{tag}
-                </span>
+                </Link>
               ))}
             </div>
           )}
 
           <div className="flex items-center justify-between pt-2">
             <div>
-              <div className="mb-2 text-sm text-gray-400">分享此文章：</div>
+              <div className="mb-2 text-sm text-(--color-fg-muted)">分享此文章：</div>
               <ShareButtons url={pageUrl} title={post.title} />
             </div>
 
             <a
               href="#top"
-              className="flex items-center gap-1 text-sm text-gray-400 transition hover:text-green-400"
+              className="flex items-center gap-1 text-sm text-(--color-fg-muted) transition hover:text-(--color-accent)"
             >
-              <LuArrowUp className="w-4 h-4" />
+              <LuArrowUp className="h-4 w-4" />
               返回顶部
             </a>
           </div>
         </div>
 
         {nextPost && (
-          <div className="mt-10 border-t border-gray-700 pt-6 text-right">
-            <div className="mb-1 text-sm text-gray-400">下一篇</div>
+          <div className="mt-10 border-t border-(--color-border) pt-6 text-right">
+            <div className="mb-1 text-sm text-(--color-fg-muted)">下一篇</div>
             <Link
               href={`/blog/${nextPost.slug}`}
-              className="font-bold text-green-400 hover:underline"
+              className="font-semibold text-(--color-accent) hover:underline"
             >
               {nextPost.title} →
             </Link>
